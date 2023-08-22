@@ -1,6 +1,6 @@
-module github.com/jomei/notionapi
+module github.com/codepiano/notionapi
 
-go 1.14
+go 1.21
 
 require (
 	github.com/iancoleman/orderedmap v0.3.0 // indirect
