@@ -3,6 +3,7 @@ package notionapi
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/iancoleman/orderedmap"
 )
 
 type PropertyConfigType string
@@ -274,7 +275,11 @@ func (i UniqueIDPropertyConfig) GetType() PropertyConfigType {
 	return ""
 }
 
-type PropertyConfigs map[string]PropertyConfig
+type PropertyConfigs orderedmap.OrderedMap
+
+func NewPropertyConfigs() PropertyConfigs {
+	return PropertyConfigs(*orderedmap.New())
+}
 
 func (p *PropertyConfigs) UnmarshalJSON(data []byte) error {
 	var raw map[string]interface{}
@@ -291,7 +296,8 @@ func (p *PropertyConfigs) UnmarshalJSON(data []byte) error {
 }
 
 func parsePropertyConfigs(raw map[string]interface{}) (PropertyConfigs, error) {
-	result := make(PropertyConfigs)
+	om := orderedmap.New()
+	var result PropertyConfigs
 	for k, v := range raw {
 		var p PropertyConfig
 		switch rawProperty := v.(type) {
@@ -341,22 +347,21 @@ func parsePropertyConfigs(raw map[string]interface{}) (PropertyConfigs, error) {
 				p = &UniqueIDPropertyConfig{}
 			default:
 
-				return nil, fmt.Errorf("unsupported property type: %s", rawProperty["type"].(string))
+				return result, fmt.Errorf("unsupported property type: %s", rawProperty["type"].(string))
 			}
 			b, err := json.Marshal(rawProperty)
 			if err != nil {
-				return nil, err
+				return result, err
 			}
 
 			if err = json.Unmarshal(b, &p); err != nil {
-				return nil, err
+				return result, err
 			}
-
-			result[k] = p
+			om.Set(k, p)
 		default:
-			return nil, fmt.Errorf("unsupported property format %T", v)
+			return result, fmt.Errorf("unsupported property format %T", v)
 		}
 	}
-
+	result = PropertyConfigs(*om)
 	return result, nil
 }

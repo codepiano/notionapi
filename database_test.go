@@ -2,6 +2,7 @@ package notionapi_test
 
 import (
 	"context"
+	"github.com/iancoleman/orderedmap"
 	"net/http"
 	"reflect"
 	"testing"
@@ -86,7 +87,7 @@ func TestDatabaseClient(t *testing.T) {
 					return
 				}
 				// TODO: remove properties from comparing for a while. Have to compare with interface somehow
-				got.Properties = nil
+				got.Properties = notionapi.NewPropertyConfigs()
 				if !reflect.DeepEqual(got, tt.want) {
 					t.Errorf("Get() got = %v, want %v", got, tt.want)
 				}
@@ -160,6 +161,12 @@ func TestDatabaseClient(t *testing.T) {
 		}
 	})
 
+	om1 := orderedmap.New()
+	om1.Set("patch", notionapi.TitlePropertyConfig{
+		Type: notionapi.PropertyConfigTypeRichText,
+	})
+	p1 := notionapi.PropertyConfigs(*om1)
+
 	t.Run("Update", func(t *testing.T) {
 		tests := []struct {
 			name       string
@@ -183,11 +190,7 @@ func TestDatabaseClient(t *testing.T) {
 							Text: &notionapi.Text{Content: "patch"},
 						},
 					},
-					Properties: notionapi.PropertyConfigs{
-						"patch": notionapi.TitlePropertyConfig{
-							Type: notionapi.PropertyConfigTypeRichText,
-						},
-					},
+					Properties: p1,
 				},
 				want: &notionapi.Database{
 					Object:         notionapi.ObjectTypeDatabase,
@@ -233,7 +236,7 @@ func TestDatabaseClient(t *testing.T) {
 					t.Errorf("Update() error = %v, wantErr %v", err, tt.wantErr)
 					return
 				}
-				got.Properties = nil
+				got.Properties = notionapi.NewPropertyConfigs()
 				if !reflect.DeepEqual(got, tt.want) {
 					t.Errorf("Update() got = %v, want %v", got, tt.want)
 				}
@@ -241,6 +244,23 @@ func TestDatabaseClient(t *testing.T) {
 		}
 	})
 
+	om2 := orderedmap.New()
+	om2.Set("create", notionapi.TitlePropertyConfig{
+		Type: notionapi.PropertyConfigTypeTitle,
+	})
+	p2 := notionapi.PropertyConfigs(*om2)
+
+	om3 := orderedmap.New()
+	om3.Set("create", notionapi.TitlePropertyConfig{
+		Type: notionapi.PropertyConfigTypeTitle,
+	})
+	p3 := notionapi.PropertyConfigs(*om3)
+
+	om4 := orderedmap.New()
+	om4.Set("create", notionapi.TitlePropertyConfig{
+		Type: notionapi.PropertyConfigTypeTitle,
+	})
+	p4 := notionapi.PropertyConfigs(*om4)
 	t.Run("Create", func(t *testing.T) {
 		tests := []struct {
 			name       string
@@ -266,12 +286,8 @@ func TestDatabaseClient(t *testing.T) {
 							Text: &notionapi.Text{Content: "Grocery List"},
 						},
 					},
-					Properties: notionapi.PropertyConfigs{
-						"create": notionapi.TitlePropertyConfig{
-							Type: notionapi.PropertyConfigTypeTitle,
-						},
-					},
-					IsInline: false,
+					Properties: p2,
+					IsInline:   false,
 				},
 				want: &notionapi.Database{
 					Object:         notionapi.ObjectTypeDatabase,
@@ -322,12 +338,8 @@ func TestDatabaseClient(t *testing.T) {
 							Text: &notionapi.Text{Content: "Grocery List"},
 						},
 					},
-					Properties: notionapi.PropertyConfigs{
-						"create": notionapi.TitlePropertyConfig{
-							Type: notionapi.PropertyConfigTypeTitle,
-						},
-					},
-					IsInline: false,
+					Properties: p3,
+					IsInline:   false,
 				},
 				want: &notionapi.Database{
 					Object:         notionapi.ObjectTypeDatabase,
@@ -378,12 +390,8 @@ func TestDatabaseClient(t *testing.T) {
 							Text: &notionapi.Text{Content: "Grocery List"},
 						},
 					},
-					Properties: notionapi.PropertyConfigs{
-						"create": notionapi.TitlePropertyConfig{
-							Type: notionapi.PropertyConfigTypeTitle,
-						},
-					},
-					IsInline: true,
+					Properties: p4,
+					IsInline:   true,
 				},
 				want: &notionapi.Database{
 					Object:         notionapi.ObjectTypeDatabase,
@@ -432,7 +440,7 @@ func TestDatabaseClient(t *testing.T) {
 					t.Errorf("Create() error = %v, wantErr %v", err, tt.wantErr)
 					return
 				}
-				got.Properties = nil
+				got.Properties = notionapi.PropertyConfigs(*orderedmap.New())
 				if !reflect.DeepEqual(got, tt.want) {
 					t.Errorf("Create() got = %v, want %v", got, tt.want)
 				}
